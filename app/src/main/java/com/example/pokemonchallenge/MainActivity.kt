@@ -36,12 +36,10 @@ class MainActivity : AppCompatActivity() {
 
        call.enqueue(object : Callback<Card> {
            override fun onFailure(call: Call<Card>, t: Throwable) {
-               //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                id.text =  "Failure: " + t.message
            }
 
            override fun onResponse(call: Call<Card>, response: Response<Card>) {
-               //TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
                if(!response.isSuccessful){
                    id.text = response.code().toString()
                     return
