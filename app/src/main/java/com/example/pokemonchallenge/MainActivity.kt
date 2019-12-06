@@ -1,25 +1,34 @@
 package com.example.pokemonchallenge
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 class MainActivity : AppCompatActivity() {
-    lateinit var test: TextView
-    lateinit var test2: ImageView
+
     var arrayListDetails:ArrayList<Model> = ArrayList()
     //OkHttpClient creates connection pool between client and server
     val client = OkHttpClient()
+    lateinit var recyclerView: RecyclerView
+
+
+    @SuppressLint("WrongConstant")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        test = this.findViewById(R.id.card)
-        test2 = this.findViewById(R.id.card1)
         run("https://api.pokemontcg.io/v1/cards")
     }
     fun run(url: String) {
@@ -34,23 +43,20 @@ class MainActivity : AppCompatActivity() {
                 //creating json object
                 val jsonContact:JSONObject = JSONObject(strResponse)
                 //creating json array
-                var jsonarrayInfo:JSONArray= jsonContact.getJSONArray("cards")
-                var i:Int = 0
-                var size:Int = jsonarrayInfo.length()
+                val jsonarrayInfo:JSONArray= jsonContact.getJSONArray("cards")
+                val size:Int = jsonarrayInfo.length()
                 for (i in 0 until size) {
-                    var jsonObjectDetail:JSONObject = jsonarrayInfo.getJSONObject(i)
-                    var model:Model= Model()
+                    val jsonObjectDetail:JSONObject = jsonarrayInfo.getJSONObject(i)
+                    val model:Model= Model()
                     model.image = jsonObjectDetail.getString("imageUrl").toString()
                     model.onclick = jsonObjectDetail.getString("imageUrlHiRes").toString()
                     arrayListDetails.add(model)
                 }
                 runOnUiThread {
-                    // Stuff that updates the UI
-                    test.text = arrayListDetails.size.toString()
-                    val picasso = Picasso.get()
-                    picasso.load(arrayListDetails.get(0).image)
-                        .into(test2)
-
+                    recyclerView = findViewById(R.id.views)
+                    recyclerView.layoutManager = LinearLayoutManager(this@MainActivity, RecyclerView.VERTICAL, false)
+                    val adapter = CustomAdapter(arrayListDetails)
+                    recyclerView.adapter = adapter
                 }
             }
         })
@@ -64,4 +70,29 @@ class Model {
         this.onclick = onclick
     }
     constructor()
+}
+
+class CustomAdapter(var list:ArrayList<Model>): RecyclerView.Adapter<CustomAdapter.ViewHolder>(){
+
+    class ViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        val name = itemView.findViewById<ImageView>(R.id.imageView)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.card_list, parent, false)
+        return ViewHolder(v)
+    }
+
+    override fun getItemCount(): Int {
+        return list.size
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val card :Model = list[position]
+        val picasso = Picasso.get()
+        picasso.load(card.image)
+          .into(holder.name)
+
+
+    }
 }
